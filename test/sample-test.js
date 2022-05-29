@@ -80,12 +80,46 @@ describe("AVAXPool", function () {
 
       await avaxPool.connect(userA).deposit(
         {value: ethers.utils.parseEther('1')}
-      );
-    
+      );    
       userABalance = await avaxPool.deposits(userA.address);
       userARewards = await avaxPool.rewards(userA.address);
       expect(userABalance).to.be.eq(ethers.utils.parseEther('1'));
       expect(userARewards).to.be.eq(ethers.utils.parseEther('1'));
+
+      await avaxPool.connect(userA).withdraw();
+      userABalance = await avaxPool.deposits(userA.address);
+      userARewards = await avaxPool.rewards(userA.address);
+      let userAEthBalanceAfter = await userA.getBalance('latest');
+      expect(userABalance).to.be.eq(ethers.utils.parseEther('0'));
+      expect(userARewards).to.be.eq(ethers.utils.parseEther('0'));
+      console.log(`BEFORE ::: ${userAEthBalanceBefore} // AFTER ::: ${userAEthBalanceAfter}`);
+      expect(userAEthBalanceBefore).to.be.gte(userAEthBalanceAfter);
+      
+    });
+      
+  
+    it("A deposits, team deposits, A withdraws", async function () {
+      let userABalance = await avaxPool.deposits(userA.address);
+      let userARewards = await avaxPool.rewards(userA.address);     
+      let userAEthBalanceBefore = await userA.getBalance('latest');      
+      expect(userABalance).to.be.eq(ethers.BigNumber.from(0));
+      expect(userARewards).to.be.eq(ethers.BigNumber.from(0));
+
+      await avaxPool.connect(userA).deposit(
+        {value: ethers.utils.parseEther('1')}
+      );    
+      userABalance = await avaxPool.deposits(userA.address);
+      userARewards = await avaxPool.rewards(userA.address);
+      expect(userABalance).to.be.eq(ethers.utils.parseEther('1'));
+      expect(userARewards).to.be.eq(ethers.utils.parseEther('1'));
+
+      await avaxPool.connect(team).reward(
+        {value: ethers.utils.parseEther('1')}
+      )
+      userABalance = await avaxPool.deposits(userA.address);
+      userARewards = await avaxPool.rewards(userA.address);
+      expect(userABalance).to.be.eq(ethers.utils.parseEther('1'));
+      expect(userARewards).to.be.eq(ethers.utils.parseEther('2'));
 
       await avaxPool.connect(userA).withdraw();
       // UserA's rewards should increase to 2 
@@ -94,19 +128,12 @@ describe("AVAXPool", function () {
       let userAEthBalanceAfter = await userA.getBalance('latest');
       expect(userABalance).to.be.eq(ethers.utils.parseEther('0'));
       expect(userARewards).to.be.eq(ethers.utils.parseEther('0'));
-      
       console.log(`BEFORE ::: ${userAEthBalanceBefore} // AFTER ::: ${userAEthBalanceAfter}`);
-      expect(userAEthBalanceBefore).to.be.gte(userAEthBalanceAfter);
-      
-    });
-  
-    it("A withdraw after team deposits", async function () {
-    });
-  
-    it("A deposits then team deposits then A withdraws", async function () {
+      expect(userAEthBalanceAfter).to.be.gte(userAEthBalanceBefore);
     });
   
     it("A tries to call reward function", async function () {
+      await expect(avaxPool.connect(userA).reward()).to.be.revertedWith('Ownable: caller is not the owner');
     });
   });
   
