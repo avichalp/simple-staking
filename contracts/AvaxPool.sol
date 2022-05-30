@@ -88,6 +88,7 @@ contract AvaxPool is Ownable, ReentrancyGuard {
             // distribute rewards            
             uint256 d;
             for (d = 0; d < depositors.length; d++) {
+                console.log("CALCULATING REWARDS :::", calculateRewards(depositors[d]));
                 rewards[depositors[d]] = calculateRewards(depositors[d]);
             }
         }        
