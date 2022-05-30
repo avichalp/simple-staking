@@ -8,7 +8,7 @@ describe("AVAXPool", function () {
   let AvaxPool;
   let avaxPool;
 
-  xdescribe("With one user and team", function() {
+  describe("With one user and team", function() {
     beforeEach(async function() {      
       users = await ethers.getSigners();
       [team, userA] = users;               
@@ -140,7 +140,6 @@ describe("AVAXPool", function () {
     });
   });
   
-  
   describe("With two users and team", function() {
     beforeEach(async function() {      
       users = await ethers.getSigners();            
@@ -158,7 +157,7 @@ describe("AVAXPool", function () {
       await avaxPool.deployed();
     });
 
-    xit("A deposits, B deposits same as A, team deposits, A withdraws, B withdraws", async function () {                
+    it("A deposits, B deposits same as A, team deposits, A withdraws, B withdraws", async function () {                
       let userABalance = await avaxPool.deposits(userA.address);
       let userARewards = await avaxPool.rewards(userA.address);      
       let userBBalance = await avaxPool.deposits(userB.address);
@@ -240,7 +239,7 @@ describe("AVAXPool", function () {
     
     });
   
-    xit("A deposits, B deposits same as A, team deposits, B withdraws, A withdraws", async function () {
+    it("A deposits, B deposits same as A, team deposits, B withdraws, A withdraws", async function () {
       let userABalance = await avaxPool.deposits(userA.address);
       let userARewards = await avaxPool.rewards(userA.address);      
       let userBBalance = await avaxPool.deposits(userB.address);
@@ -318,7 +317,7 @@ describe("AVAXPool", function () {
     
     });
   
-    xit("A deposits, B deposits more than A, team deposits, A withdraws, B withdraws", async function () {
+    it("A deposits, B deposits more than A, team deposits, A withdraws, B withdraws", async function () {
     
       let userABalance = await avaxPool.deposits(userA.address);
       let userARewards = await avaxPool.rewards(userA.address);      
@@ -399,7 +398,7 @@ describe("AVAXPool", function () {
 
     });
   
-    xit("A deposits, B deposits more than A, team deposits, B withdraws, A withdraws", async function () {
+    it("A deposits, B deposits more than A, team deposits, B withdraws, A withdraws", async function () {
       let userABalance = await avaxPool.deposits(userA.address);
       let userARewards = await avaxPool.rewards(userA.address);      
       let userBBalance = await avaxPool.deposits(userB.address);
@@ -478,7 +477,7 @@ describe("AVAXPool", function () {
       expect(userAEthBalanceAfter).to.be.gte(userAEthBalanceBefore);    
     });
   
-    xit("A deposits, B deposits less than A, team deposits, A withdraws, B withdraws", async function () {
+    it("A deposits, B deposits less than A, team deposits, A withdraws, B withdraws", async function () {
       let userABalance = await avaxPool.deposits(userA.address);
       let userARewards = await avaxPool.rewards(userA.address);      
       let userBBalance = await avaxPool.deposits(userB.address);
@@ -559,7 +558,7 @@ describe("AVAXPool", function () {
      
     });
   
-    xit("A deposits, B deposits less than A, team deposits, B withdraws, A withdraws", async function () {
+    it("A deposits, B deposits less than A, team deposits, B withdraws, A withdraws", async function () {
       let userABalance = await avaxPool.deposits(userA.address);
       let userARewards = await avaxPool.rewards(userA.address);      
       let userBBalance = await avaxPool.deposits(userB.address);
@@ -639,7 +638,7 @@ describe("AVAXPool", function () {
 
     });
   
-    xit("A deposits, team deposits, B deposits, A withdraws, B withdraws", async function () {
+    it("A deposits, team deposits, B deposits, A withdraws, B withdraws", async function () {
       let userABalance = await avaxPool.deposits(userA.address);
       let userARewards = await avaxPool.rewards(userA.address);      
       let userBBalance = await avaxPool.deposits(userB.address);
@@ -719,10 +718,82 @@ describe("AVAXPool", function () {
     });
   
     it("A deposits, team deposits, B deposits, B withdraws, A withdraws", async function () {
+      let userABalance = await avaxPool.deposits(userA.address);
+      let userARewards = await avaxPool.rewards(userA.address);      
+      let userBBalance = await avaxPool.deposits(userB.address);
+      let userBRewards = await avaxPool.rewards(userB.address);      
+      expect(userABalance).to.be.eq(ethers.BigNumber.from(0));
+      expect(userARewards).to.be.eq(ethers.BigNumber.from(0));
+      expect(userBBalance).to.be.eq(ethers.BigNumber.from(0));
+      expect(userBRewards).to.be.eq(ethers.BigNumber.from(0));
+      // UserA deposits
+      await avaxPool.connect(userA).deposit(
+        {value: ethers.utils.parseEther('1')}
+      );
       
+      // Check state after A deposits
+      let userAEthBalanceBefore = await userA.getBalance('latest'); 
+      userABalance = await avaxPool.deposits(userA.address);
+      userARewards = await avaxPool.rewards(userA.address);
+      userBBalance = await avaxPool.deposits(userB.address);
+      userBRewards = await avaxPool.rewards(userB.address);      
+      expect(userABalance).to.be.eq(ethers.utils.parseEther('1'));
+      expect(userARewards).to.be.eq(ethers.utils.parseEther('1'));
+      expect(userBBalance).to.be.eq(ethers.BigNumber.from(0));
+      expect(userBRewards).to.be.eq(ethers.BigNumber.from(0));     
+      
+       // Team deposits
+       await avaxPool.connect(team).reward(
+        {value: ethers.utils.parseEther('2')}
+      );
+      // check state after Team deposits
+      userABalance = await avaxPool.deposits(userA.address);
+      userARewards = await avaxPool.rewards(userA.address);
+      userBBalance = await avaxPool.deposits(userB.address);
+      userBRewards = await avaxPool.rewards(userB.address);
+      expect(userABalance).to.be.eq(ethers.utils.parseEther('1'));
+      expect(userARewards).to.be.eq(ethers.utils.parseEther('3'));  
+      expect(userBBalance).to.be.eq(ethers.utils.parseEther('0'));
+      expect(userBRewards).to.be.eq(ethers.utils.parseEther('0'));
+
+      // User B deposits
+      await avaxPool.connect(userB).deposit(
+        {value: ethers.utils.parseEther('1')}
+      );
+
+      let userBEthBalanceBefore = await userB.getBalance('latest');
+      userABalance = await avaxPool.deposits(userA.address);
+      userARewards = await avaxPool.rewards(userA.address);
+      userBBalance = await avaxPool.deposits(userB.address);
+      userBRewards = await avaxPool.rewards(userB.address);      
+      expect(userABalance).to.be.eq(ethers.utils.parseEther('1'));
+      // A should get 100% of the pool since B didn't deposit yet      
+      expect(userARewards).to.be.eq(ethers.utils.parseEther('3'));
+      expect(userBBalance).to.be.eq(ethers.utils.parseEther('1'));
+      expect(userBRewards).to.be.eq(ethers.utils.parseEther('1'));
+
+      // B withdraws
+      await avaxPool.connect(userB).withdraw();      
+      userBBalance = await avaxPool.deposits(userB.address);
+      userBRewards = await avaxPool.rewards(userB.address);    
+      let userBEthBalanceAfter = await userB.getBalance('latest');      
+      expect(userBBalance).to.be.eq(ethers.utils.parseEther('0'));
+      expect(userBRewards).to.be.eq(ethers.utils.parseEther('0'));
+      console.log(`B BEFORE ::: ${userBEthBalanceBefore} // B AFTER ::: ${userBEthBalanceAfter}`);
+      console.log(`B DIFF ::: ${userBEthBalanceAfter.sub(userBEthBalanceBefore)}`);
+      expect(userBEthBalanceAfter).to.be.gte(userBEthBalanceBefore);
+
+      // A withdraws
+      await avaxPool.connect(userA).withdraw();      
+      userABalance = await avaxPool.deposits(userA.address);
+      userARewards = await avaxPool.rewards(userA.address);    
+      let userAEthBalanceAfter = await userA.getBalance('latest');      
+      expect(userABalance).to.be.eq(ethers.utils.parseEther('0'));
+      expect(userARewards).to.be.eq(ethers.utils.parseEther('0'));
+      console.log(`A BEFORE ::: ${userAEthBalanceBefore} // A AFTER ::: ${userAEthBalanceAfter}`);
+      console.log(`A DIFF ::: ${userAEthBalanceAfter.sub(userAEthBalanceBefore)}`);
+      expect(userAEthBalanceAfter).to.be.gte(userAEthBalanceBefore);
     });
   });
-
-  
 
 });
