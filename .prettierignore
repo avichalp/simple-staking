@@ -1,0 +1,8 @@
+node_modules/
+build/
+coverage/
+packages/dapp/.next/
+packages/hardhat/artifacts/
+packages/hardhat/cache/
+artifacts
+cache

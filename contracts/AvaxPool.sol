@@ -1,20 +1,7 @@
 //SPDX-License-Identifier: Unlicense
 pragma solidity ^0.8.0;
-
-import "hardhat/console.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
-
-
-// state0: PreDepost: (mapping-> empty), (rewards-> 0)
-// event0: Deposit
-// state1: PostDeposit: (mapping -> not-empty), (rewards -> 0)
-
-
-// state2: 
-// assumption 1 : for simplicity, withdraw function withdraws all of the due amount (doesn't take aguments) 
-// assumption 2 : the deployer (owner) must be a team member, only owner can Reward the rewards later
-
 
 
 contract AvaxPool is Ownable, ReentrancyGuard {
@@ -33,8 +20,7 @@ contract AvaxPool is Ownable, ReentrancyGuard {
 
     /// @notice Accepts ETH/AVAX that grows over time
     /// @dev Accepts native token (ETH/AVAX) and adds it into the pool. Saves the sender address. 
-    function deposit() public payable {
-        console.log("in deposit :::: ", msg.sender);
+    function deposit() public payable {        
         require(msg.value > 0, "No value deposited");
 
         deposits[msg.sender] += msg.value;        
@@ -51,15 +37,12 @@ contract AvaxPool is Ownable, ReentrancyGuard {
     /// @notice Lets a user withdraws funds plus rewards (if any)
     /// @dev Explain to a developer any extra details
     /// @return amount msg.sender's balance plus rewards acrued
-    function withdraw() public nonReentrant returns (uint256 amount) {
-        // constraint 1: msg.sender must have enough balance
-        // constraint 2: pool must have enough balance
+    function withdraw() public nonReentrant returns (uint256 amount) {                
         amount = rewards[msg.sender];
 
         require(deposits[msg.sender] > 0, "No deposit found");
         require(address(this).balance >= amount, "Pool out of liquidity");
-
-        console.log("SENDER WITHDRAWING :::", amount);
+        
         payable(msg.sender).transfer(amount); 
         
         deposits[msg.sender] = 0;
@@ -87,8 +70,7 @@ contract AvaxPool is Ownable, ReentrancyGuard {
         } else {
             // distribute rewards            
             uint256 d;
-            for (d = 0; d < depositors.length; d++) {
-                console.log("CALCULATING REWARDS :::", calculateRewards(depositors[d]));
+            for (d = 0; d < depositors.length; d++) {                
                 rewards[depositors[d]] = calculateRewards(depositors[d]);
             }
         }        
@@ -97,7 +79,6 @@ contract AvaxPool is Ownable, ReentrancyGuard {
     /// @notice Explain to an end user what this does
     /// @dev Explain to a developer any extra details    
     function withdrawUnclaimedRewards() public onlyOwner nonReentrant {
-        console.log("Claiming unclaimed rewards");
         payable(msg.sender).transfer(unclaimedRewards);
         unclaimedRewards = 0;
     }
