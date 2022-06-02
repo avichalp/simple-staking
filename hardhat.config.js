@@ -1,5 +1,9 @@
 require('@nomiclabs/hardhat-waffle');
+require('solidity-coverage');
+require("hardhat-gas-reporter");
 require('dotenv').config();
+require('@nomiclabs/hardhat-etherscan');
+const SNOWTRACE_API_KEY = require('./.env.json').APIKEY;
 
 const FUJI_PRIVATE_KEY = process.env.FUJI_PRIVATE_KEY;
 
@@ -21,6 +25,11 @@ task('accounts', 'Prints the list of accounts', async (taskArgs, hre) => {
  */
 module.exports = {
   solidity: '0.8.4',    
+  etherscan: {
+    // Your API key for Snowtrace
+    // Obtain one at https://snowtrace.io/
+    apiKey: SNOWTRACE_API_KEY,
+  },
   networks: {
     localhost: {
       url: "http://localhost:8545",      

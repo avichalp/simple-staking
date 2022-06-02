@@ -18,8 +18,11 @@
     "hardhat": "^2.9.6"
   },
   "dependencies": {
+    "@nomiclabs/hardhat-etherscan": "^3.0.4",
     "@openzeppelin/contracts": "^4.6.0",
     "avalanche": "^3.14.1",
-    "dotenv": "^16.0.1"
+    "dotenv": "^16.0.1",
+    "hardhat-gas-reporter": "^1.0.8",
+    "solidity-coverage": "^0.7.21"
   }
 }
