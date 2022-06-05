@@ -3,11 +3,20 @@
     {
       "files": "*.sol",
       "options": {
-        "printWidth": 125,
-        "tabWidth": 4,
+        "$schema": "http://json.schemastore.org/prettierrc",
+        "arrowParens": "always",
+        "bracketSpacing": true,
+        "jsxBracketSameLine": false,
+        "jsxSingleQuote": false,
+        "printWidth": 80,
+        "proseWrap": "always",
+        "quoteProps": "as-needed",
+        "semi": true,
+        "tabWidth": 2,
+        "trailingComma": "all",
+        "endOfLine": "lf",
         "useTabs": false,
         "singleQuote": false,
-        "bracketSpacing": false,
         "explicitTypes": "preserve"
       }
     },

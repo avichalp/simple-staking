@@ -1,6 +1,6 @@
 require('@nomiclabs/hardhat-waffle');
 require('solidity-coverage');
-require("hardhat-gas-reporter");
+require('hardhat-gas-reporter');
 require('dotenv').config();
 require('@nomiclabs/hardhat-etherscan');
 const SNOWTRACE_API_KEY = require('./.env.json').APIKEY;
@@ -24,7 +24,7 @@ task('accounts', 'Prints the list of accounts', async (taskArgs, hre) => {
  * @type import('hardhat/config').HardhatUserConfig
  */
 module.exports = {
-  solidity: '0.8.4',    
+  solidity: '0.8.4',
   etherscan: {
     // Your API key for Snowtrace
     // Obtain one at https://snowtrace.io/
@@ -32,13 +32,13 @@ module.exports = {
   },
   networks: {
     localhost: {
-      url: "http://localhost:8545",      
+      url: 'http://localhost:8545',
     },
     fujiAvalanche: {
-      url: "https://api.avax-test.network/ext/bc/C/rpc",
+      url: 'https://api.avax-test.network/ext/bc/C/rpc',
       gasPrice: 225000000000,
-      chainId: 43113,    
-      accounts: [`0x${FUJI_PRIVATE_KEY}`],    
+      chainId: 43113,
+      accounts: [`0x${FUJI_PRIVATE_KEY}`],
     },
     // TODO: change it to FUJI
     hardhat: {
@@ -46,5 +46,5 @@ module.exports = {
         url: `https://api.avax-test.network/ext/bc/C/rpc`,
       },
     },
-  }
+  },
 };
