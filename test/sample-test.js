@@ -8,7 +8,7 @@ describe('AVAXPool', function () {
   let AvaxPool;
   let avaxPool;
 
-  xdescribe('With one user and team', function () {
+  describe('With one user and team', function () {
     beforeEach(async function () {
       users = await ethers.getSigners();
       [team, userA] = users;
@@ -209,7 +209,7 @@ describe('AVAXPool', function () {
       await avaxPool.deployed();
     });
 
-    xit('A deposits, B deposits same as A, team deposits, A withdraws, B withdraws', async function () {
+    it('A deposits, B deposits same as A, team deposits, A withdraws, B withdraws', async function () {
       let userABalance = await avaxPool.deposits(userA.address);
       let userARewards = await avaxPool.rewards(userA.address);
       let userBBalance = await avaxPool.deposits(userB.address);
@@ -283,7 +283,7 @@ describe('AVAXPool', function () {
       expect(userAEthBalanceAfter).to.be.gte(userAEthBalanceBefore);
     });
 
-    xit('A deposits, B deposits same as A, team deposits, B withdraws, A withdraws', async function () {
+    it('A deposits, B deposits same as A, team deposits, B withdraws, A withdraws', async function () {
       let userABalance = await avaxPool.deposits(userA.address);
       let userARewards = await avaxPool.rewards(userA.address);
       let userBBalance = await avaxPool.deposits(userB.address);
@@ -356,7 +356,7 @@ describe('AVAXPool', function () {
       expect(userBEthBalanceAfter).to.be.gte(userBEthBalanceBefore);
     });
 
-    xit('A deposits, B deposits more than A, team deposits, A withdraws, B withdraws', async function () {
+    it('A deposits, B deposits more than A, team deposits, A withdraws, B withdraws', async function () {
       let userABalance = await avaxPool.deposits(userA.address);
       let userARewards = await avaxPool.rewards(userA.address);
       let userBBalance = await avaxPool.deposits(userB.address);
@@ -431,7 +431,7 @@ describe('AVAXPool', function () {
       expect(userBEthBalanceAfter).to.be.gte(userBEthBalanceBefore);
     });
 
-    xit('A deposits, B deposits more than A, team deposits, B withdraws, A withdraws', async function () {
+    it('A deposits, B deposits more than A, team deposits, B withdraws, A withdraws', async function () {
       let userABalance = await avaxPool.deposits(userA.address);
       let userARewards = await avaxPool.rewards(userA.address);
       let userBBalance = await avaxPool.deposits(userB.address);
@@ -506,7 +506,7 @@ describe('AVAXPool', function () {
       expect(userAEthBalanceAfter).to.be.gte(userAEthBalanceBefore);
     });
 
-    xit('A deposits, B deposits less than A, team deposits, A withdraws, B withdraws', async function () {
+    it('A deposits, B deposits less than A, team deposits, A withdraws, B withdraws', async function () {
       let userABalance = await avaxPool.deposits(userA.address);
       let userARewards = await avaxPool.rewards(userA.address);
       let userBBalance = await avaxPool.deposits(userB.address);
@@ -581,7 +581,7 @@ describe('AVAXPool', function () {
       expect(userBEthBalanceAfter).to.be.gte(userBEthBalanceBefore);
     });
 
-    xit('A deposits, B deposits less than A, team deposits, B withdraws, A withdraws', async function () {
+    it('A deposits, B deposits less than A, team deposits, B withdraws, A withdraws', async function () {
       let userABalance = await avaxPool.deposits(userA.address);
       let userARewards = await avaxPool.rewards(userA.address);
       let userBBalance = await avaxPool.deposits(userB.address);
@@ -656,7 +656,7 @@ describe('AVAXPool', function () {
       expect(userAEthBalanceAfter).to.be.gte(userAEthBalanceBefore);
     });
 
-    xit('A deposits, team deposits, B deposits, A withdraws, B withdraws', async function () {
+    it('A deposits, team deposits, B deposits, A withdraws, B withdraws', async function () {
       let userABalance = await avaxPool.deposits(userA.address);
       let userARewards = await avaxPool.rewards(userA.address);
       let userBBalance = await avaxPool.deposits(userB.address);
@@ -729,7 +729,7 @@ describe('AVAXPool', function () {
       expect(userBEthBalanceAfter).to.be.lte(userBEthBalanceBefore);
     });
 
-    xit('A deposits, team deposits, B deposits, B withdraws, A withdraws', async function () {
+    it('A deposits, team deposits, B deposits, B withdraws, A withdraws', async function () {
       let userABalance = await avaxPool.deposits(userA.address);
       let userARewards = await avaxPool.rewards(userA.address);
       let userBBalance = await avaxPool.deposits(userB.address);
