@@ -64,6 +64,8 @@ contract AvaxPool is Ownable, ReentrancyGuard {
             removeDepositor(depositorIdx);
         }
 
+        emit Withdraw(msg.sender, amount);
+
         return amount;
     }
 
@@ -83,6 +85,8 @@ contract AvaxPool is Ownable, ReentrancyGuard {
                 rewards[depositors[d]] = calculateRewards(depositors[d]);
             }
         }
+
+        emit Reward(msg.sender, msg.value);
     }
 
     /// @notice Explain to an end user what this does
