@@ -25,7 +25,7 @@ task('accounts', 'Prints the list of accounts', async (taskArgs, hre) => {
 /**
  * @type import('hardhat/config').HardhatUserConfig
  */
-module.exports = {
+const config = {
   solidity: '0.8.4',
   etherscan: {
     // Your API key for Snowtrace
@@ -36,12 +36,6 @@ module.exports = {
     localhost: {
       url: 'http://localhost:8545',
     },
-    fujiAvalanche: {
-      url: 'https://api.avax-test.network/ext/bc/C/rpc',
-      gasPrice: 225000000000,
-      chainId: 43113,
-      accounts: [`0x${FUJI_PRIVATE_KEY}`],
-    },
     // TODO: change it to FUJI
     hardhat: {
       forking: {
@@ -50,3 +44,15 @@ module.exports = {
     },
   },
 };
+
+
+if (FUJI_PRIVATE_KEY !== '') {
+  config.networks.fujiAvalanche = {
+    url: 'https://api.avax-test.network/ext/bc/C/rpc',
+    gasPrice: 225000000000,
+    chainId: 43113,
+    accounts: [`0x${FUJI_PRIVATE_KEY}`],
+  }
+}
+
+module.exports = config;
