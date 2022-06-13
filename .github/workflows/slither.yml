@@ -16,6 +16,20 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v3
 
+      - name: Use Node.js 16
+        uses: actions/setup-node@v2
+        with:
+          node-version: "16"
+
+      - name: Installing dependencies
+        run: npm ci
+
+      - name: Running Tests
+        run: npm run coverage
+
+      - name: Compile
+        run: npm run compile
+
       - name: Run Slither
         uses: crytic/slither-action@v0.1.1
         continue-on-error: true

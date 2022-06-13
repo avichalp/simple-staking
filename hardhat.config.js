@@ -4,15 +4,10 @@ require('hardhat-gas-reporter');
 require('dotenv').config();
 require('@nomiclabs/hardhat-etherscan');
 
-const snowtrace = require('./.env.json');
-
-if (snowtrace) {
-  const SNOWTRACE_API_KEY = snowtrace.APIKEY;
-} else {
-  const SNOWTRACE_API_KEY = '';
-}
+// const snowtrace = require('./.env.json');
 
 const FUJI_PRIVATE_KEY = process.env.FUJI_PRIVATE_KEY;
+const SNOWTRACE_API_KEY = process.env.SNOWTRACE_API_KEY;
 
 // This is a sample Hardhat task. To learn how to create your own go to
 // https://hardhat.org/guides/create-task.html
