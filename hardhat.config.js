@@ -3,7 +3,14 @@ require('solidity-coverage');
 require('hardhat-gas-reporter');
 require('dotenv').config();
 require('@nomiclabs/hardhat-etherscan');
-const SNOWTRACE_API_KEY = require('./.env.json').APIKEY;
+
+const snowtrace = require('./.env.json');
+
+if (snowtrace) {
+  const SNOWTRACE_API_KEY = snowtrace.APIKEY;
+} else {
+  const SNOWTRACE_API_KEY = '';
+}
 
 const FUJI_PRIVATE_KEY = process.env.FUJI_PRIVATE_KEY;
 
