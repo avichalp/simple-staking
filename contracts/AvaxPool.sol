@@ -1,11 +1,13 @@
 //SPDX-License-Identifier: Unlicense
-pragma solidity ^0.8.0;
+pragma solidity 0.8.4;
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 
 
 contract AvaxPool is Ownable, ReentrancyGuard {
     uint256 public unclaimedRewards;
+
+    uint256 internal depositorIdx;
 
     mapping(address => uint256) public deposits;
     address[] internal depositors;
@@ -38,9 +40,6 @@ contract AvaxPool is Ownable, ReentrancyGuard {
         require(rewards[msg.sender] + deposits[msg.sender] >= amount, "No rewards available");
         require(address(this).balance >= amount, "Pool out of liquidity");
 
-        // If the amount is valid, first make the transfer before doing the accounting
-        payable(msg.sender).transfer(amount);
-
         if (rewards[msg.sender] >= amount) {
             // add leftover rewards to deposit to make them eligible
             // for next distribution
@@ -54,7 +53,6 @@ contract AvaxPool is Ownable, ReentrancyGuard {
         // Remove from Depositor's Array
         if (deposits[msg.sender] <= 0) {
             uint256 d;
-            uint256 depositorIdx;
             for (d = 0; d < depositors.length; d++) {
                 if (depositors[d] == msg.sender) {
                     depositorIdx = d;
@@ -66,6 +64,7 @@ contract AvaxPool is Ownable, ReentrancyGuard {
 
         emit Withdraw(msg.sender, amount);
 
+        payable(msg.sender).transfer(amount);
         return amount;
     }
 
@@ -76,13 +75,14 @@ contract AvaxPool is Ownable, ReentrancyGuard {
         // if they depoist before there are any depositors,
         // these funds will be locked up in `unclaimedRewards`
         // the 'team' can re-claim them later
+        uint256 currentReward = msg.value;
         if (depositors.length == 0) {
-            unclaimedRewards += msg.value;
+            unclaimedRewards += currentReward;
         } else {
             // distribute rewards
             uint256 d;
             for (d = 0; d < depositors.length; d++) {
-                rewards[depositors[d]] = calculateRewards(depositors[d]);
+                rewards[depositors[d]] = calculateRewards(depositors[d], currentReward);
             }
         }
 
@@ -92,8 +92,8 @@ contract AvaxPool is Ownable, ReentrancyGuard {
     /// @notice Explain to an end user what this does
     /// @dev Explain to a developer any extra details
     function withdrawUnclaimedRewards() public onlyOwner nonReentrant {
-        payable(msg.sender).transfer(unclaimedRewards);
         unclaimedRewards = 0;
+        payable(msg.sender).transfer(unclaimedRewards);
     }
 
     /// @dev Explain to a developer any extra details
@@ -108,11 +108,15 @@ contract AvaxPool is Ownable, ReentrancyGuard {
     /// share and returns the their rewards
     /// @param depositor address whose rewards are to be calculated
     /// @return depositorReward based on their share of liquidity
-    function calculateRewards(address depositor) private view returns (uint256 depositorReward) {
-        // msg.value will be included in the contract's balance
+    function calculateRewards(
+        address depositor,
+        uint256 rewardAmount
+    ) private view returns (uint256 depositorReward)
+    {
+
         uint256 depositorBalance = deposits[depositor];
         uint256 numerator = depositorBalance * (address(this).balance - unclaimedRewards);
-        uint256 denominator = address(this).balance - msg.value - unclaimedRewards;
+        uint256 denominator = address(this).balance - rewardAmount - unclaimedRewards;
         // rewards minus original balance
         depositorReward = (numerator / denominator) - depositorBalance;
 
