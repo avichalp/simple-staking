@@ -22,7 +22,7 @@ contract AvaxPool is Ownable, ReentrancyGuard {
 
     /// @notice Accepts ETH/AVAX that grows over time
     /// @dev Accepts native token (ETH/AVAX) and adds it into the pool. Saves the sender address.
-    function deposit() public payable {
+    function deposit() external payable {
         require(msg.value > 0, "Zero deposit is not allowed");
 
         deposits[msg.sender] += msg.value;
