@@ -1,10 +1,8 @@
-require('@nomiclabs/hardhat-waffle');
-require('solidity-coverage');
-require('hardhat-gas-reporter');
-require('dotenv').config();
-require('@nomiclabs/hardhat-etherscan');
+import { HardhatUserConfig, task } from "hardhat/config";
+import 'dotenv/config'
+import { EtherscanConfig } from "@nomiclabs/hardhat-etherscan/dist/src/types";
+import "@nomicfoundation/hardhat-toolbox";
 
-// const snowtrace = require('./.env.json');
 
 const FUJI_PRIVATE_KEY = process.env.FUJI_PRIVATE_KEY;
 const SNOWTRACE_API_KEY = process.env.SNOWTRACE_API_KEY;
@@ -25,12 +23,18 @@ task('accounts', 'Prints the list of accounts', async (taskArgs, hre) => {
 /**
  * @type import('hardhat/config').HardhatUserConfig
  */
-const config = {
+
+interface Etherscan {
+  etherscan?: EtherscanConfig,
+}
+
+const config: HardhatUserConfig & Etherscan = {
   solidity: '0.8.4',
   etherscan: {
     // Your API key for Snowtrace
     // Obtain one at https://snowtrace.io/
     apiKey: SNOWTRACE_API_KEY,
+    customChains: []
   },
   networks: {
     localhost: {
@@ -45,7 +49,7 @@ const config = {
   },
 };
 
-if (FUJI_PRIVATE_KEY) {
+if (config.networks && FUJI_PRIVATE_KEY) {
   config.networks.fujiAvalanche = {
     url: 'https://api.avax-test.network/ext/bc/C/rpc',
     gasPrice: 225000000000,

@@ -9,3 +9,9 @@ typechain
 cache
 artifacts
 bin
+
+#typechain
+src/types
+
+# slither
+slither-results.json
