@@ -2,12 +2,12 @@ import { ethers } from 'hardhat'
 
 async function main() {
   // We get the contract to deploy
-  const AvaxPool = await ethers.getContractFactory('AvaxPool');
-  const avaxPool = await AvaxPool.deploy();
+  const Pool = await ethers.getContractFactory('StakingPool');
+  const stakingPool = await Pool.deploy();
 
-  await avaxPool.deployed();
+  await stakingPool.deployed();
 
-  console.log('AvaxPool deployed to:', avaxPool.address);
+  console.log('StakingPool deployed to:', stakingPool.address);
 }
 
 // We recommend this pattern to be able to use async/await everywhere

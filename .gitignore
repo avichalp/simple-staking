@@ -12,6 +12,7 @@ bin
 
 #typechain
 src/types
+typechain-types
 
 # slither
 slither-results.json

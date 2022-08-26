@@ -29,7 +29,12 @@ interface Etherscan {
 }
 
 const config: HardhatUserConfig & Etherscan = {
-  solidity: '0.8.4',
+  solidity: {
+    compilers: [
+      {version: '0.8.0'},
+      {version: '0.8.4'}
+    ]
+  },
   etherscan: {
     // Your API key for Snowtrace
     // Obtain one at https://snowtrace.io/
