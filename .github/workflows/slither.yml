@@ -24,6 +24,9 @@ jobs:
       - name: Installing dependencies
         run: npm ci
 
+      - name: Generating types
+        run: npm run types
+
       - name: Running Tests
         run: npm run coverage
 
