@@ -1,4 +1,11 @@
 {
-    "slither.solcPath": "",
-    "slither.hiddenDetectors": []
+  "slither.solcPath": "",
+  "slither.hiddenDetectors": [],
+  "editor.defaultFormatter": "esbenp.prettier-vscode",
+  "[javascript]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "[solidity]": {
+    "editor.defaultFormatter": "JuanBlanco.solidity"
+  }
 }
