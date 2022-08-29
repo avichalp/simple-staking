@@ -1,5 +1,5 @@
 //SPDX-License-Identifier: Unlicense
-pragma solidity 0.8.4;
+pragma solidity ^0.8.0;
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 
@@ -17,7 +17,7 @@ contract StakingPool is Ownable, ReentrancyGuard {
   event Reward(address indexed distributor, uint256 amount);
   event Withdraw(address indexed receiver, uint256 amount);
 
-  /// @notice Accepts ETH/AVAX that grows over time
+  /// @notice Accepts native token like ETH/AVAX to make it grow over time
   /// @dev Accepts native token (ETH/AVAX) and adds it into the pool. Saves the sender address.
   function deposit() external payable {
     require(msg.value > 0, "Zero deposit is not allowed");
@@ -28,9 +28,8 @@ contract StakingPool is Ownable, ReentrancyGuard {
   }
 
   /// @notice Lets a user withdraws funds plus rewards (if any)
-  /// @dev Explain to a developer any extra details
   /// @return amount msg.sender's balance plus rewards acrued
-  function withdraw(uint256 amount) public nonReentrant returns (uint256) {
+  function withdraw(uint256 amount) external nonReentrant returns (uint256) {
     // check if sender is eligible for rewards
     require(deposits[msg.sender] > 0, "No deposits found");
     require(
@@ -67,9 +66,9 @@ contract StakingPool is Ownable, ReentrancyGuard {
     return amount;
   }
 
-  /// @notice Allows the 'team' to send rewards
+  /// @notice Allows the 'team/admin' to send rewards
   /// @dev Explain to a developer any extra details
-  function reward() public payable onlyOwner {
+  function reward() external payable onlyOwner {
     // team members are allowed to deposit and anytime
     // if they depoist before there are any depositors,
     // these funds will be locked up in `unclaimedRewards`
@@ -80,7 +79,7 @@ contract StakingPool is Ownable, ReentrancyGuard {
     } else {
       // distribute rewards
       uint256 d;
-      for (d = 0; d < depositors.length; d++) {
+      for (d; d < depositors.length; d++) {
         rewards[depositors[d]] = calculateRewards(depositors[d], currentReward);
       }
     }
@@ -88,14 +87,16 @@ contract StakingPool is Ownable, ReentrancyGuard {
     emit Reward(msg.sender, msg.value);
   }
 
-  /// @notice Explain to an end user what this does
-  /// @dev Explain to a developer any extra details
-  function withdrawUnclaimedRewards() public onlyOwner nonReentrant {
+  /// @dev withdrawUnclaimedRewards can be used by the admin to drain stuck funds
+  //  if the admin deposits rewards before anyone has staked their tokens
+  // the the reward amount will be stuck in the contract. It can be removed
+  // using this function
+  function withdrawUnclaimedRewards() external onlyOwner nonReentrant {
     unclaimedRewards = 0;
     payable(msg.sender).transfer(unclaimedRewards);
   }
 
-  /// @dev Explain to a developer any extra details
+  /// @dev private function to delete an element from an un-ordered array
   /// @param index that is to be deleted
   function removeDepositor(uint index) private {
     require(index < depositors.length, "Invalid depositor index");
