@@ -25,6 +25,12 @@ contract StakingToken is Ownable, ReentrancyGuard, ERC20 {
     emit Deposit(msg.sender, msg.value);
   }
 
+  /// @notice receives native tokens only from th 'admin' for rewarding stakers
+  /// @dev The admin can transfer some ETH to the contract which will be used
+  /// to give rewards to the stakers. No reward calculation happens at this point
+  /// only the ETH is transferd from Admin to Contract
+  receive() external payable onlyOwner {}
+
   /// @notice Lets a user redeem native tokens for sToken tokens
   /// @return redeemed amount
   function withdraw(uint256 amount) external nonReentrant returns (uint256) {

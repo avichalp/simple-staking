@@ -67,7 +67,6 @@ contract StakingPool is Ownable, ReentrancyGuard {
   }
 
   /// @notice Allows the 'team/admin' to send rewards
-  /// @dev Explain to a developer any extra details
   function reward() external payable onlyOwner {
     // team members are allowed to deposit and anytime
     // if they depoist before there are any depositors,
