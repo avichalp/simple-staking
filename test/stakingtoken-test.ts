@@ -87,7 +87,7 @@ describe("StakingToken", () => {
     // User tries to withdraw more than they deposit
     await expect(
       pool.connect(userB).withdraw(ethers.utils.parseEther("1"))
-    ).to.be.revertedWith("Given amount is greater than available rewards");
+    ).to.be.revertedWith("Contract out of liquidity");
   });
 
   it("admin can send funds to the contract", async () => {
