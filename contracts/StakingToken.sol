@@ -5,8 +5,6 @@ import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 
-import "hardhat/console.sol";
-
 contract StakingToken is Ownable, ReentrancyGuard, ERC20 {
   event Deposit(address indexed depositor, uint256 amount);
   event Withdraw(address indexed receiver, uint256 amount);
@@ -42,10 +40,6 @@ contract StakingToken is Ownable, ReentrancyGuard, ERC20 {
 
     uint256 maxAmount = maxWithdrawlAmount(msg.sender);
 
-    console.log("MAX AVAILABLE", maxAmount);
-    console.log("POOL TOKEN BALANCE", this.balanceOf(msg.sender));
-    console.log("TO WITHDRAW", amount);
-
     // check if sender is eligible for rewards
     require(
       maxAmount >= amount,
@@ -70,9 +64,7 @@ contract StakingToken is Ownable, ReentrancyGuard, ERC20 {
   /// @return the max available reward for the staker
   function maxWithdrawlAmount(address account) internal view returns (uint256) {
     uint256 numerator = (this.balanceOf(account) * address(this).balance);
-    console.log("numerator", numerator);
     uint256 denominator = this.totalSupply();
-    console.log("denominator", denominator);
     return numerator / denominator;
   }
 
@@ -88,7 +80,7 @@ contract StakingToken is Ownable, ReentrancyGuard, ERC20 {
     } else {
       burnAmount = amount;
     }
-    console.log("burn amount: ", burnAmount);
+
     _burn(account, burnAmount);
   }
 }
