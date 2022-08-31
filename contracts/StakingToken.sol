@@ -1,8 +1,11 @@
 //SPDX-License-Identifier: Unlicense
 pragma solidity ^0.8.0;
+
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
+
+import "hardhat/console.sol";
 
 contract StakingToken is Ownable, ReentrancyGuard, ERC20 {
   event Deposit(address indexed depositor, uint256 amount);
@@ -34,25 +37,58 @@ contract StakingToken is Ownable, ReentrancyGuard, ERC20 {
   /// @notice Lets a user redeem native tokens for sToken tokens
   /// @return redeemed amount
   function withdraw(uint256 amount) external nonReentrant returns (uint256) {
-    // check if sender is eligible for rewards
-    uint256 sendersBalance = this.balanceOf(msg.sender);
+    // Make sure that the contract is solvent
+    require(address(this).balance >= amount, "Contract out of liquidity");
 
+    uint256 maxAmount = maxWithdrawlAmount(msg.sender);
+
+    console.log("MAX AVAILABLE", maxAmount);
+    console.log("POOL TOKEN BALANCE", this.balanceOf(msg.sender));
+    console.log("TO WITHDRAW", amount);
+
+    // check if sender is eligible for rewards
     require(
-      sendersBalance >= amount,
+      maxAmount >= amount,
       "Given amount is greater than available rewards"
     );
 
-    // Make sure that the contract is solvent
-    require(address(this).balance >= amount, "Contract out of liquidity");
+    // burn sender's stake before redeeming the underlying
+    burn(msg.sender, amount);
 
     // redeem native token for sToken
     payable(msg.sender).transfer(amount);
 
-    // burn the sToken tokens
-    _burn(msg.sender, amount);
-
     emit Withdraw(msg.sender, amount);
 
     return amount;
+  }
+
+  // internal functions
+
+  /// @dev based on the shares of the staking pool held by the staker, calcualtes
+  /// the reward. shares are (tokens held by the staker / total supply)
+  /// @return the max available reward for the staker
+  function maxWithdrawlAmount(address account) internal view returns (uint256) {
+    uint256 numerator = (this.balanceOf(account) * address(this).balance);
+    console.log("numerator", numerator);
+    uint256 denominator = this.totalSupply();
+    console.log("denominator", denominator);
+    return numerator / denominator;
+  }
+
+  /// @dev this function calculates the burn amount and calls ERC20 _burn
+  /// if the max available reward > sender's staked, burn the whole stake
+  /// otherwise burn the withdraw amount
+  function burn(address account, uint256 amount) internal {
+    uint256 senderStake = this.balanceOf(account);
+    uint256 burnAmount;
+
+    if (amount >= senderStake) {
+      burnAmount = senderStake;
+    } else {
+      burnAmount = amount;
+    }
+    console.log("burn amount: ", burnAmount);
+    _burn(account, burnAmount);
   }
 }
