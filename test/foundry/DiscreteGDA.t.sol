@@ -86,5 +86,41 @@ contract DiscreteGDATest is Test {
     assertTrue(address(this).balance == purchasePrice);
   }
 
+  function testPurchasePrice(
+    uint64 quantity,
+    uint8 numTokens,
+    uint8 timeSinceStart
+  ) public {
+    uint256 purchasePrice = gda.purchasePrice(uint256(numTokens));
+    vm.deal(address(this), purchasePrice);
+    gda.purchaseTokens{ value: purchasePrice }(numTokens, address(this));
+
+    vm.warp(block.timestamp + timeSinceStart);
+    uint256 expectedPrice = expectedPurchasePrice(
+      uint256(quantity),
+      timeSinceStart
+    );
+    // calculate the new price
+    uint256 actualPrice = gda.purchasePrice(uint256(quantity));
+
+    assertEq(expectedPrice, actualPrice);
+  }
+
+  function expectedPurchasePrice(uint256 quantity, uint256 timeSinceStart)
+    internal
+    returns (uint256)
+  {
+    int256 num1 = initialPrice.mul(
+      scaleFactor.pow(int256(gda.currentId()).fromInt())
+    );
+    int256 num2 = scaleFactor.pow(int256(quantity).fromInt()) -
+      PRBMathSD59x18.fromInt(1);
+    int256 den1 = decayConstant.mul(int256(timeSinceStart).fromInt()).exp();
+    int256 den2 = scaleFactor - PRBMathSD59x18.fromInt(1);
+
+    int256 expectedPrice = num1.mul(num2).div(den1.mul(den2));
+    return uint256(expectedPrice);
+  }
+
   receive() external payable {}
 }
