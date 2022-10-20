@@ -17,7 +17,7 @@ contract MyDiscreteGDA is DiscreteGDA {
     public
     pure
     virtual
-    override5gt
+    override
     returns (string memory)
   {
     return "helloworld";
