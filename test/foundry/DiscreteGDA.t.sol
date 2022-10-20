@@ -24,7 +24,6 @@ contract MockDiscreteGDA is DiscreteGDA {
 
 contract DiscreteGDATest is Test {
   using PRBMathSD59x18 for int256;
-  //using Strings for uint256;
 
   DiscreteGDA public gda;
 
@@ -87,13 +86,12 @@ contract DiscreteGDATest is Test {
   }
 
   function testPurchasePrice(
-    uint64 quantity,
+    uint8 quantity,
     uint8 numTokens,
     uint8 timeSinceStart
   ) public {
-    uint256 purchasePrice = gda.purchasePrice(uint256(numTokens));
-    vm.deal(address(this), purchasePrice);
-    gda.purchaseTokens{ value: purchasePrice }(numTokens, address(this));
+    // purchase m initial tokens for setup
+    purchaseTokens(uint256(numTokens));
 
     vm.warp(block.timestamp + timeSinceStart);
     uint256 expectedPrice = expectedPurchasePrice(
@@ -110,9 +108,7 @@ contract DiscreteGDATest is Test {
     internal
     returns (uint256)
   {
-    int256 num1 = initialPrice.mul(
-      scaleFactor.pow(int256(gda.currentId()).fromInt())
-    );
+    int256 num1 = initialPrice.mul(scaleFactor.powu(gda.currentId()));
     int256 num2 = scaleFactor.pow(int256(quantity).fromInt()) -
       PRBMathSD59x18.fromInt(1);
     int256 den1 = decayConstant.mul(int256(timeSinceStart).fromInt()).exp();
@@ -120,6 +116,13 @@ contract DiscreteGDATest is Test {
 
     int256 expectedPrice = num1.mul(num2).div(den1.mul(den2));
     return uint256(expectedPrice);
+  }
+
+  function purchaseTokens(uint256 m) internal {
+    uint256 purchasePrice = gda.purchasePrice(m);
+    // make sure test runnner has funds to purchase tokens
+    vm.deal(address(this), purchasePrice);
+    gda.purchaseTokens{ value: purchasePrice }(m, address(this));
   }
 
   receive() external payable {}

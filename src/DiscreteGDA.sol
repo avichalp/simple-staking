@@ -35,11 +35,10 @@ abstract contract DiscreteGDA is ERC721 {
 
   function purchasePrice(uint256 numTokens) public view returns (uint256) {
     int256 quantity = int256(numTokens).fromInt();
-    int256 numSold = int256(currentId).fromInt();
     int256 timeSinceStart = int256(block.timestamp).fromInt() -
       auctionStartTime;
 
-    int256 num1 = initialPrice.mul(scaleFactor.pow(numSold));
+    int256 num1 = initialPrice.mul(scaleFactor.powu(currentId));
     int256 num2 = scaleFactor.pow(quantity) - PRBMathSD59x18.fromInt(1);
     int256 den1 = decayConstant.mul(timeSinceStart).exp();
     int256 den2 = scaleFactor - PRBMathSD59x18.fromInt(1);
