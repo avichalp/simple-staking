@@ -12,9 +12,13 @@ abstract contract DiscreteGDA is ERC721 {
   uint256 public currentId = 0;
 
   // stored as 59x18 fixed precision number
+  // initialPrice (k)
   int256 internal immutable initialPrice;
+  // scaleFactor (α)
   int256 internal immutable scaleFactor;
+  // decayConstant (λ)
   int256 internal immutable decayConstant;
+  // auctionStartTime (T)
   int256 internal immutable auctionStartTime;
 
   error InsufficientPayment();
