@@ -4,7 +4,7 @@ pragma solidity ^0.8.13;
 import "forge-std/Test.sol";
 import "../../src/ContGDA.sol";
 
-contract MockDiscreteGDA is ContGDA {
+contract MockContGDA is ContGDA {
   constructor(
     string memory _name,
     string memory _symbol,
@@ -28,15 +28,46 @@ contract ContGDATest is Test {
   int256 public emissionRate = PRBMathSD59x18.fromInt(1);
 
   bytes insufficientPayment = abi.encodeWithSignature("InsufficientPayment()");
+  bytes insufficientTokens =
+    abi.encodeWithSignature("InsufficientAvailableTokens()");
 
   function setUp() public {
-    gda = new MockDiscreteGDA(
+    gda = new MockContGDA(
       "Token",
       "TKN",
       initialPrice,
       emissionRate,
       decayConstant
     );
+  }
+
+  function testInsufficientPayment() public {
+    vm.warp(block.timestamp + 10);
+    uint256 purchaseAmount = 5;
+    uint256 purchasePrice = gda.purchasePrice(purchaseAmount);
+    vm.deal(address(this), purchasePrice);
+    vm.expectRevert(insufficientPayment);
+    gda.purchaseTokens{ value: purchasePrice - 1 }(
+      purchaseAmount,
+      address(this)
+    );
+  }
+
+  function testInsufficientEmissions() public {
+    vm.warp(block.timestamp + 10);
+    vm.expectRevert(insufficientTokens);
+    gda.purchaseTokens(11, address(this));
+  }
+
+  function testMintCorrectly() public {
+    vm.warp(block.timestamp + 10);
+    assertEq(gda.balanceOf(address(this)), 0);
+    uint256 purchaseAmount = 5;
+    uint256 purchasePrice = gda.purchasePrice(purchaseAmount);
+    assertTrue(purchasePrice > 0);
+    vm.deal(address(this), purchasePrice);
+    gda.purchaseTokens{ value: purchasePrice }(purchaseAmount, address(this));
+    assertEq(gda.balanceOf(address(this)), purchaseAmount);
   }
 
   function testPurchasePrice() public {
@@ -46,8 +77,16 @@ contract ContGDATest is Test {
     vm.warp(block.timestamp + 10);
     uint256 purchasePrice = gda.purchasePrice(quantity);
 
-    // initially the purchace price should be same (within 1/10 of percent)
-    // as the calculated purchase price
-    assertApproxEqRel(purchasePrice, initial, 1_000000_000000000);
+    assertEq(purchasePrice, 19865241060018290657);
   }
+
+  function testRefund() public {
+    vm.warp(block.timestamp + 10);
+    uint256 purchasePrice = gda.purchasePrice(1);
+    vm.deal(address(this), 2 * purchasePrice);
+    gda.purchaseTokens{ value: 2 * purchasePrice }(1, address(this));
+    assertTrue(address(this).balance == purchasePrice);
+  }
+
+  receive() external payable {}
 }
