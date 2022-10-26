@@ -77,7 +77,7 @@ contract ContGDATest is Test {
     vm.warp(block.timestamp + 10);
     uint256 purchasePrice = gda.purchasePrice(quantity);
 
-    assertEq(purchasePrice, 19865241060018290657);
+    assertEq(purchasePrice, 19.865241060018290657e18);
   }
 
   function testRefund() public {
