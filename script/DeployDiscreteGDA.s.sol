@@ -2,7 +2,7 @@
 pragma solidity ^0.8.13;
 
 import "forge-std/Script.sol";
-import "../src/DiscreteGDA.sol";
+import "../src/GDA/DiscreteGDA.sol";
 
 contract MyDiscreteGDA is DiscreteGDA {
   constructor(

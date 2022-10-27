@@ -2,7 +2,7 @@
 pragma solidity ^0.8.13;
 
 import "forge-std/Test.sol";
-import "../../src/DiscreteGDA.sol";
+import "../../src/GDA/DiscreteGDA.sol";
 
 contract MockDiscreteGDA is DiscreteGDA {
   constructor(
