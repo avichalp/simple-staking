@@ -21,18 +21,6 @@ jobs:
         with:
           node-version: "16"
 
-      - name: Installing dependencies
-        run: npm ci
-
-      - name: Generating types
-        run: npm run types
-
-      - name: Running Tests
-        run: npm run coverage
-
-      - name: Compile
-        run: npm run compile
-
       - name: Run Slither
         uses: crytic/slither-action@v0.1.1
         continue-on-error: true

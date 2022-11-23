@@ -1,0 +1,31 @@
+name: ci
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+    branches: [master]
+
+jobs:
+  ci:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      security-events: write
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Use Node.js 16
+        uses: actions/setup-node@v2
+        with:
+          node-version: "16"
+
+      - name: Installing dependencies
+        run: npm ci
+
+      - name: Generating types
+        run: npm run types
+
+      - name: Running Tests
+        run: npm run coverage
