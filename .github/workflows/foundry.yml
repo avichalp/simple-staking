@@ -1,0 +1,26 @@
+name: Foundry
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+    branches:
+      - master
+
+jobs:
+  foundry:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Install Foundry
+        uses: onbjerg/foundry-toolchain@v1
+        with:
+          version: nightly
+
+      - name: Pull library deps
+        working-directory: src
+        run: forge update
+
+      - name: Run forge tests
+        run: forge test --contracts src
