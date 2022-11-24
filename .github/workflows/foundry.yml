@@ -19,8 +19,7 @@ jobs:
           version: nightly
 
       - name: Pull library deps
-        working-directory: src
         run: forge update
 
       - name: Run forge tests
-        run: forge test --contracts src
+        run: forge test --contracts src --lib-paths lib
