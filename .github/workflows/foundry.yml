@@ -7,6 +7,10 @@ on:
     branches:
       - master
 
+env:
+  GOERLI_RPC_URL: ""
+  ETHERSCAN_KEY: ""
+
 jobs:
   foundry:
     runs-on: ubuntu-latest
