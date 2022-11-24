@@ -7,14 +7,20 @@ on:
     branches:
       - master
 
+env:
+  GOERLI_RPC_URL: ""
+  ETHERSCAN_KEY: ""
+
 jobs:
   foundry:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
+        with:
+          submodules: recursive
 
       - name: Install Foundry
-        uses: onbjerg/foundry-toolchain@v1
+        uses: foundry-rs/foundry-toolchain@v1
         with:
           version: nightly
 
@@ -25,4 +31,4 @@ jobs:
         run: forge update
 
       - name: Run forge tests
-        run: forge test --contracts src --lib-paths lib --config-path foundry.toml
+        run: forge test --contracts src --lib-paths lib --config-path foundry.toml -vvv
