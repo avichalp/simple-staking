@@ -18,6 +18,9 @@ jobs:
         with:
           version: nightly
 
+      - name: Show the Foundry config
+        run: forge config
+
       - name: Pull library deps
         run: forge update
 
