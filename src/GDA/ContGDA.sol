@@ -2,20 +2,18 @@
 pragma solidity ^0.8.13;
 
 import { ERC20 } from "solmate/tokens/ERC20.sol";
-import { PRBMathSD59x18 } from "lib/prb-math/contracts/PRBMathSD59x18.sol";
+import { SD59x18, add, sub, mul, div, exp } from "lib/prb-math/src/SD59x18.sol";
 
 //@notice Implementation of Continuous GDA with exponential price decay for ERC20
 abstract contract ContGDA is ERC20 {
-  using PRBMathSD59x18 for int256;
-
   ///@notice initialPrice (k) stored as 59x18 fixed precision number
-  int256 internal immutable initialPrice;
+  SD59x18 internal immutable initialPrice;
   ///@notice decayConstant (λ) stored as 59x18 fixed precision number
-  int256 internal immutable decayConstant;
+  SD59x18 internal immutable decayConstant;
   ///@notice lastAuctionTime (T): when the previous auction was started stored as 59x18 fixed precision number
-  int256 internal lastAuctionTime;
+  SD59x18 internal lastAuctionTime;
   ///@notice emissionRate (r) stored as 59x18 fixed precision number
-  int256 internal immutable emissionRate;
+  SD59x18 internal immutable emissionRate;
 
   error InsufficientPayment();
   error UnableToRefund();
@@ -24,37 +22,46 @@ abstract contract ContGDA is ERC20 {
   constructor(
     string memory _name,
     string memory _symbol,
-    int256 _initialPrice,
-    int256 _emissionRate,
-    int256 _decayConstant
+    SD59x18 _initialPrice,
+    SD59x18 _emissionRate,
+    SD59x18 _decayConstant
   ) ERC20(_name, _symbol, 18) {
     initialPrice = _initialPrice;
     emissionRate = _emissionRate;
     decayConstant = _decayConstant;
-    lastAuctionTime = int256(block.timestamp).fromInt();
+    lastAuctionTime = SD59x18.wrap(int256(block.timestamp * 1e18));
   }
 
   function purchasePrice(uint256 numTokens) public view returns (uint256) {
-    int256 quantity = int256(numTokens).fromInt();
-    int256 timeSinceLastAuctionStart = int256(block.timestamp).fromInt() -
-      lastAuctionTime;
+    SD59x18 quantity = SD59x18.wrap(int256(numTokens));
+    SD59x18 timeSinceLastAuctionStart = sub(
+      SD59x18.wrap(int256(block.timestamp * 1e18)),
+      lastAuctionTime
+    );
 
-    int256 num1 = initialPrice;
-    int256 num2 = decayConstant.mul(quantity).div(emissionRate).exp() -
-      PRBMathSD59x18.fromInt(1);
-    int256 den1 = decayConstant;
-    int256 den2 = decayConstant.mul(timeSinceLastAuctionStart).exp();
+    SD59x18 num1 = initialPrice;
+    SD59x18 num2 = sub(
+      exp(div(mul(decayConstant, quantity), emissionRate)),
+      SD59x18.wrap(1e18)
+    );
+    SD59x18 den1 = decayConstant;
+    SD59x18 den2 = exp(mul(decayConstant, timeSinceLastAuctionStart));
 
-    int256 totalCost = num1.mul(num2).div(den1.mul(den2));
-    return uint256(totalCost);
+    SD59x18 totalCost = div(mul(num1, num2), mul(den1, den2));
+    return uint256(SD59x18.unwrap(totalCost));
   }
 
   //@notice purchase a specific number of tokens from the GDA
   function purchaseTokens(uint256 numTokens, address to) public payable {
-    int256 timeSinceLastAuction = int256(block.timestamp).fromInt() -
-      lastAuctionTime;
+    SD59x18 timeSinceLastAuction = sub(
+      SD59x18.wrap(int256(block.timestamp * 1e18)),
+      lastAuctionTime
+    );
     // r * (currentTime - lastAuctionTime) > numTokens --> cannot mint!
-    if (int256(numTokens).fromInt() > timeSinceLastAuction.mul(emissionRate)) {
+    if (
+      int256(numTokens) >
+      SD59x18.unwrap(mul(timeSinceLastAuction, emissionRate))
+    ) {
       revert InsufficientAvailableTokens();
     }
 
@@ -64,9 +71,9 @@ abstract contract ContGDA is ERC20 {
     }
 
     //mint numTokens
-    _mint(to, numTokens);
+    _mint(to, numTokens / 1e18);
     // update last auction time
-    lastAuctionTime += timeSinceLastAuction;
+    lastAuctionTime = add(lastAuctionTime, timeSinceLastAuction);
 
     //refund extra payment
     uint256 refund = msg.value - cost;
