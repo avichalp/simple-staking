@@ -8,9 +8,9 @@ contract MyDiscreteGDA is DiscreteGDA {
   constructor(
     string memory _name,
     string memory _symbol,
-    int256 _initialPrice,
-    int256 _scalerFactor,
-    int256 _decayConstant
+    SD59x18 _initialPrice,
+    SD59x18 _scalerFactor,
+    SD59x18 _decayConstant
   ) DiscreteGDA(_name, _symbol, _initialPrice, _scalerFactor, _decayConstant) {}
 
   function tokenURI(uint256)
@@ -25,17 +25,16 @@ contract MyDiscreteGDA is DiscreteGDA {
 }
 
 contract DGDAScript is Script {
-  using PRBMathSD59x18 for int256;
 
   DiscreteGDA public gda;
 
-  int256 public initialPrice = PRBMathSD59x18.fromInt(1000);
+  SD59x18 public initialPrice = SD59x18.wrap(1000);
   // lambda = 1/2
-  int256 public decayConstant =
-    PRBMathSD59x18.fromInt(1).div(PRBMathSD59x18.fromInt(2));
+  //int256 public decayConstant = SD59x18.wrap(1).div(SD59x18.wrap(2));
+  SD59x18 public decayConstant = div(SD59x18.wrap(1), SD59x18.wrap(2));
   // alpha = 1.1
-  int256 public scaleFactor =
-    PRBMathSD59x18.fromInt(11).div(PRBMathSD59x18.fromInt(10));
+  //int256 public scaleFactor = SD59x18.wrap(11).div(SD59x18.wrap(10));
+  SD59x18 public scaleFactor = div(SD59x18.wrap(11), SD59x18.wrap(10));
 
   bytes insufficientPayment = abi.encodeWithSignature("InsufficientPayment()");
 

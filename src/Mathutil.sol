@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.13;
 
-contract Math {
+contract Mathutil {
   function chineseRemainder(uint256 x0, uint256 x1)
     internal
     pure
@@ -120,8 +120,9 @@ contract Math {
     return r;
   }
 
-  /// @notice Multiplies two 256 bits numbers with out overflowing
+  /// @notice Multiplies two 256 bits numbers without overflowing
   /// then divides the result by the thrid number.
+  ///
   /// @dev 1. Multiply the two 256bit inputs using mulmod and CRT to get a 512bit
   ///         number broken into two 256bit numbers: prod1*2^256 + prod0
   ///      2. Subtract the remainder of the division i.e. mulmod(a, b, denominator)
@@ -132,6 +133,7 @@ contract Math {
   ///         prod1*2^256 -> (prod1*2^256)/2^N and prod0 -> prod0/(2^N)
   ///      5. Since we have shifted prod0 by N bits, we can move these bits from prod1 to prod0
   ///      6. Finally take mod-inverse of (prod0, dinominator) % 2^256
+  ///
   /// @param a, b, denominator are the inputs for: (a * b) / denominator
   /// @return result (256 bit number) = (a * b) / denominator.
   function muldiv(
@@ -147,7 +149,7 @@ contract Math {
       (prod0, prod1) = mul512(a, b);
     }
 
-    require(prod1 < denominator);
+    require(prod1 < denominator, "prod1 > denominator");
 
     uint256 inv;
 
@@ -249,95 +251,82 @@ contract Math {
     }
   }
 
-  function log2Unoptimized(uint256 x) internal pure returns (uint256 r) {
-    while (x > 1) {
-      x = x >> 1;
-      ++r;
+  function mostSignificantBit(uint256 x) internal pure returns (uint256 msb) {
+    if (x >= 2**128) {
+      x >>= 128;
+      msb += 128;
+    }
+    if (x >= 2**64) {
+      x >>= 64;
+      msb += 64;
+    }
+    if (x >= 2**32) {
+      x >>= 32;
+      msb += 32;
+    }
+    if (x >= 2**16) {
+      x >>= 16;
+      msb += 16;
+    }
+    if (x >= 2**8) {
+      x >>= 8;
+      msb += 8;
+    }
+    if (x >= 2**4) {
+      x >>= 4;
+      msb += 4;
+    }
+    if (x >= 2**2) {
+      x >>= 2;
+      msb += 2;
+    }
+    if (x >= 2**1) {
+      msb += 1;
     }
   }
 
-  function log2(uint256 x) internal pure returns (uint256 r) {
-    assembly {
-      r := shl(7, lt(0xffffffffffffffffffffffffffffffff, x))
-      r := or(r, shl(6, lt(0xffffffffffffffff, shr(r, x))))
-      r := or(r, shl(5, lt(0xffffffff, shr(r, x))))
-
-      // For the remaining 32 bits, use a De Bruijn lookup.
-      x := shr(r, x)
-      x := or(x, shr(1, x))
-      x := or(x, shr(2, x))
-      x := or(x, shr(4, x))
-      x := or(x, shr(8, x))
-      x := or(x, shr(16, x))
-      r := or(
-        r,
-        byte(
-          shr(251, mul(x, shl(224, 0x07c4acdd))),
-          0x0009010a0d15021d0b0e10121619031e080c141c0f111807131b17061a05041f
-        )
-      )
+  function log2Wad(uint256 x) internal pure returns (uint256) {
+    // first calculate the integer by finding out the most siginifcant bit
+    // then calculate y and delta and the fraction part
+    // x will be a WAD that is a multiple of 1e18
+    // it has 60 digits for integer part and 18 digits for decimal part
+    uint256 scale = 1e18;
+    uint256 msb = mostSignificantBit(x / scale);
+    uint256 r = msb * scale;
+    uint256 y = x >> msb;
+    if (y == scale) {
+      return r;
     }
-  }
+    for (uint256 delta = scale / 2; delta > 0; delta /= 2) {
+      y = (y * y) / scale;
 
-  function lnWad(int256 x) internal pure returns (int256 r) {
-    unchecked {
-      require(x > 0, "UNDEFINED");
-
-      // We want to convert x from 10**18 fixed point to 2**96 fixed point.
-      // We do this by multiplying by 2**96 / 10**18. But since
-      // ln(x * C) = ln(x) + ln(C), we can simply do nothing here
-      // and add ln(2**96 / 10**18) at the end.
-
-      // Reduce range of x to (1, 2) * 2**96
-      // ln(2^k * x) = k * ln(2) + ln(x)
-      int256 k = int256(log2(uint256(x))) - 96;
-      x <<= uint256(159 - k);
-      x = int256(uint256(x) >> 159);
-
-      // Evaluate using a (8, 8)-term rational approximation.
-      // p is made monic, we will multiply by a scale factor later.
-      int256 p = x + 3273285459638523848632254066296;
-      p = ((p * x) >> 96) + 24828157081833163892658089445524;
-      p = ((p * x) >> 96) + 43456485725739037958740375743393;
-      p = ((p * x) >> 96) - 11111509109440967052023855526967;
-      p = ((p * x) >> 96) - 45023709667254063763336534515857;
-      p = ((p * x) >> 96) - 14706773417378608786704636184526;
-      p = p * x - (795164235651350426258249787498 << 96);
-
-      // We leave p in 2**192 basis so we don't need to scale it back up for the division.
-      // q is monic by convention.
-      int256 q = x + 5573035233440673466300451813936;
-      q = ((q * x) >> 96) + 71694874799317883764090561454958;
-      q = ((q * x) >> 96) + 283447036172924575727196451306956;
-      q = ((q * x) >> 96) + 401686690394027663651624208769553;
-      q = ((q * x) >> 96) + 204048457590392012362485061816622;
-      q = ((q * x) >> 96) + 31853899698501571402653359427138;
-      q = ((q * x) >> 96) + 909429971244387300277376558375;
-      assembly {
-        // Div in assembly because solidity adds a zero check despite the unchecked.
-        // The q polynomial is known not to have zeros in the domain.
-        // No scaling required because p is already 2**96 too large.
-        r := sdiv(p, q)
+      if (y > 2 * scale) {
+        r += delta;
+        y = y / 2;
       }
+    }
+    return r;
+  }
 
-      // r is in the range (0, 0.125) * 2**96
+  /// @notice returns the natural logarithm of x
+  /// @dev ln(x) = log2(x) / log2(e)
+  function lnWad(uint256 x) internal pure returns (uint256 r) {
+    uint256 log2E = 1_442695040888963407;
+    uint256 scale = 1e18;
+    return muldiv(log2Wad(x), scale, log2E);
+  }
 
-      // Finalization, we need to:
-      // * multiply by the scale factor s = 5.549…
-      // * add ln(2**96 / 10**18)
-      // * add k * ln(2)
-      // * multiply by 10**18 / 2**96 = 5**18 >> 78
-
-      // mul s * 5e18 * 2**96, base is now 5**18 * 2**192
-      r *= 1677202110996718588342820967067443963516166;
-      // add ln(2) * k * 5e18 * 2**192
-      r +=
-        16597577552685614221487285958193947469193820559219878177908093499208371 *
-        k;
-      // add ln(2**96 / 10**18) * 5e18 * 2**192
-      r += 600920179829731861736702779321621459595472258049074101567377883020018308;
-      // base conversion: mul 2**18 / 2**192
-      r >>= 174;
+  function powuWad(uint256 x, uint256 y)
+    internal
+    pure
+    returns (uint256 result)
+  {
+    result = y % 2 == 1 ? x : 1e18;
+    for (y /= 2; y > 0; y /= 2) {
+      x = muldiv(x, x, 1e18);
+      if (y % 2 == 1) {
+        result = muldiv(result, x, 1e18);
+      }
     }
   }
 }
