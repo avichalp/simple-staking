@@ -10,7 +10,7 @@ import "solmate/utils/LibString.sol";
 contract MathutilTest is Test, Mathutil {
   using LibString for uint256;
 
-  function testmul512() public {
+  function testMul512() public {
     uint256 a = type(uint256).max;
     uint256 b = type(uint256).max - 1;
     (uint256 r0, uint256 r1) = mul512(a, b);
@@ -33,7 +33,7 @@ contract MathutilTest is Test, Mathutil {
     assertEq(r1, 0);
   }
 
-  function testmul512(uint256 a, uint256 b) public {
+  function testMul512(uint256 a, uint256 b) public {
     vm.assume(b > 1);
     (uint256 r0, uint256 r1) = mul512(a, b);
     (uint256 r2, uint256 r3) = div512(r0, r1, b);
@@ -41,7 +41,7 @@ contract MathutilTest is Test, Mathutil {
     assertEq(r3, 0);
   }
 
-  function testdiv512() public {
+  function testDiv512() public {
     uint256 a0 = 115792089237316195423570985008687907853269984665640564039457584007913129639935;
     uint256 a1 = 115792089237316195423570985008687907853269984665640564039457584007913129639935;
     uint256 b = 115792089237316195423570985008687907853269984665640564039457584007913129639935;
@@ -59,7 +59,7 @@ contract MathutilTest is Test, Mathutil {
     assertEq(r1, 0);
   }
 
-  function testsub512(
+  function testSub512(
     uint256 a0,
     uint256 a1,
     uint256 b0,
@@ -76,7 +76,7 @@ contract MathutilTest is Test, Mathutil {
     }
   }
 
-  function testadd512(
+  function testAdd512(
     uint256 a0,
     uint256 a1,
     uint256 b0,
@@ -93,7 +93,7 @@ contract MathutilTest is Test, Mathutil {
     }
   }
 
-  function testinv256(uint256 a) public {
+  function testInv256(uint256 a) public {
     vm.assume(a > 1);
     uint256 r = inv256(a);
     if (r == 0) {
@@ -105,7 +105,7 @@ contract MathutilTest is Test, Mathutil {
     }
   }
 
-  function testtwoDivisors(uint256 a) public {
+  function testTwoDivisors(uint256 a) public {
     vm.assume(a > 1);
     vm.assume(a % 2 == 0);
     uint256 result = twoDivisor(a);
@@ -117,34 +117,34 @@ contract MathutilTest is Test, Mathutil {
     assertTrue(result == result & ~(result - 1));
   }
 
-  function testdiv256() public {
+  function testDiv256() public {
     assertEq(div256(2), 2**255);
     assertEq(div256(4), 2**254);
     assertEq(div256(1), 0);
   }
 
-  function testmod256() public {
+  function testMod256() public {
     assertEq(mod256(2), 0);
     assertEq(mod256(type(uint256).max), 1);
   }
 
-  function testexpWadLowerBound() public {
+  function testExpWadLowerBound() public {
     assertEq(expWad(-43e18), 0);
   }
 
-  function testexpWadOverflow() public {
+  function testExpWadOverflow() public {
     vm.expectRevert("EXP_OVERFLOW");
     expWad(136e18);
   }
 
-  function testexpWad() public {
+  function testExpWad() public {
     assertEq(expWad(1e18), 2718281828459045235);
     assertEq(expWad(0e18), 1e18);
     assertEq(expWad(2e18), 7389056098930650227);
     assertEq(expWad(2718281828459045235), 15154262241479264184); // e^e
   }
 
-  function testlog2() public {
+  function testLog2() public {
     assertEq(log2Wad(0e18), 0);
     assertEq(log2Wad(1e18), 0);
     assertEq(log2Wad(9e18), 3169925001442312346);
@@ -165,7 +165,7 @@ contract MathutilTest is Test, Mathutil {
     );
   }
 
-  function testlog2FFI() public {
+  function testLog2FFI() public {
     uint256 n = 9;
     int256 pyResult = abi.decode(ffi("log2", n.toString()), (int256));
     uint256 solResult = log2Wad(9e18);
@@ -209,7 +209,7 @@ contract MathutilTest is Test, Mathutil {
     return output;
   }
 
-  function testlnWad() public {
+  function testLnWad() public {
     assertEq(lnWad(0e18), 0);
     assertEq(lnWad(1e18), 0);
     assertEq(lnWad(9e18), 2197224577336219371);
@@ -230,7 +230,7 @@ contract MathutilTest is Test, Mathutil {
     );
   }
 
-  function testlnWadFFI() public {
+  function testLnWadFFI() public {
     uint256 n = 9;
     int256 pyResult = abi.decode(ffi("ln", n.toString()), (int256));
     uint256 solResult = lnWad(9e18);
@@ -260,7 +260,7 @@ contract MathutilTest is Test, Mathutil {
     assertApproxEqAbs(solResult, uint256(pyResult), 5000);
   }
 
-  function testmuldiv(uint256 b) public {
+  function testMuldiv(uint256 b) public {
     vm.assume(
       b <= 115792089237316195423570985008687907853269984665640564039457
     );
@@ -271,7 +271,7 @@ contract MathutilTest is Test, Mathutil {
     assertEq(muldiv(1e36, b, 1e18), 1e18 * b);
   }
 
-  function testmuldivFail() public {
+  function testMuldivFail() public {
     vm.expectRevert("prod1 > denominator");
     // muldiv overflows when prod1/denominotor > 1 in:
     // (prod1*2^256 + prod0) / denominator
@@ -282,7 +282,7 @@ contract MathutilTest is Test, Mathutil {
     );
   }
 
-  function testpowuWad() public {
+  function testPowuWad() public {
     assertEq(powuWad(0, 0), 1e18);
     assertEq(powuWad(0, 1), 0);
     assertEq(powuWad(1e18, 0), 1e18);
@@ -330,7 +330,7 @@ contract MathutilTest is Test, Mathutil {
     );
   }
 
-  function testpowuWadFFI() public {
+  function testPowuWadFFI() public {
     // Cross Ref tests
     uint256 x = 2;
     uint256 y = 3;
@@ -351,7 +351,7 @@ contract MathutilTest is Test, Mathutil {
     assertApproxEqAbs(solResult, uint256(pyResult), 500);
   }
 
-  function testmostSignificantBit() public {
+  function testMostSignificantBit() public {
     assertEq(mostSignificantBit(10), 3);
     assertEq(mostSignificantBit(7), 2);
     assertEq(mostSignificantBit(2), 1);
@@ -359,6 +359,4 @@ contract MathutilTest is Test, Mathutil {
     assertEq(mostSignificantBit(0), 0);
     assertEq(mostSignificantBit(type(uint256).max), 255);
   }
-
-  function testMath() public {}
 }
