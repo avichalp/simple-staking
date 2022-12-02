@@ -359,4 +359,19 @@ contract MathutilTest is Test, Mathutil {
     assertEq(mostSignificantBit(0), 0);
     assertEq(mostSignificantBit(type(uint256).max), 255);
   }
+
+  function testSignedMuldiv() public {
+    assertEq(
+      muldiv(type(int256).max, type(int256).max, type(int256).max),
+      type(int256).max
+    );
+    assertEq(
+      muldiv(type(int256).min + 1, type(int256).min + 1, type(int256).min + 1),
+      type(int256).min + 1
+    );
+    assertEq(muldiv(0, -1e18, 1e18), 0);
+    assertEq(muldiv(1e18, -1e18, 1e18), -1e18);
+    assertEq(muldiv(2e18, -3e18, 1e18), -6e18);
+    assertEq(muldiv(2e18, -3e18, -1e18), 6e18);
+  }
 }

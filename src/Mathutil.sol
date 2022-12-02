@@ -13,6 +13,10 @@ contract Mathutil {
     }
   }
 
+  /// @notice gives the 512-bit product of two 256-bit numbers
+  /// 
+  /// @param a, b multiplicand and multiplier
+  /// @return r0 and r1, the 512-bit product as two 256-bit numbers
   function mul512(uint256 a, uint256 b)
     internal
     pure
@@ -123,7 +127,8 @@ contract Mathutil {
   /// @notice Multiplies two 256 bits numbers without overflowing
   /// then divides the result by the thrid number.
   ///
-  /// @dev 1. Multiply the two 256bit inputs using mulmod and CRT to get a 512bit
+  /// @dev Credits to Remco Bloemen under MIT license https://xn--2-umb.com/21/muldiv.
+  ///      1. Multiply the two 256bit inputs using mulmod and CRT to get a 512bit
   ///         number broken into two 256bit numbers: prod1*2^256 + prod0
   ///      2. Subtract the remainder of the division i.e. mulmod(a, b, denominator)
   ///      3. To calculate mod-inverse of dinominator the precondition must satisfy:
@@ -169,6 +174,56 @@ contract Mathutil {
       inv = inv256(denominator);
 
       return prod0 * inv;
+    }
+  }
+
+  /// @notice Calculates the muldiv for signed numbers
+  ///
+  /// @dev Calculates absolute values of a and b, then calculates the muldiv
+  ///
+  /// @param a, b, denominator are the inputs for: (a * b) / denominator
+  /// @return result is an int256 number = (a * b) / denominator.
+  function muldiv(
+    int256 a,
+    int256 b,
+    int256 denominator
+  ) internal pure returns (int256 result) {
+    require(denominator != 0, "denominator == 0");
+    // a, b and the denominator cannot be type(int256).min because
+    // -type(int256).min will overflow
+    if (
+      a == type(int256).min ||
+      b == type(int256).min ||
+      denominator == type(int256).min
+    ) {
+      revert("one of the input is type(int256).min");
+    }
+
+    bool negative = false;
+    if (a < 0) {
+      negative = !negative;
+      a = -a;
+    }
+    if (b < 0) {
+      negative = !negative;
+      b = -b;
+    }
+    if (denominator < 0) {
+      negative = !negative;
+      denominator = -denominator;
+    }
+
+    uint256 result256 = muldiv(uint256(a), uint256(b), uint256(denominator));
+    // result must fit in int256
+    require(
+      result256 <= uint256(type(int256).max),
+      "signed muldiv result > type(int256).max"
+    );
+
+    if (negative) {
+      return -int256(result256);
+    } else {
+      return int256(result256);
     }
   }
 
