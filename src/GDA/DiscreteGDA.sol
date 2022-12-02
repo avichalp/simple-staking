@@ -2,7 +2,7 @@
 pragma solidity ^0.8.13;
 
 import { ERC721 } from "solmate/tokens/ERC721.sol";
-import { SD59x18, add, sub, mul, div, exp, pow } from "lib/prb-math/src/SD59x18.sol";
+import { SD59x18, add, sub, mul, div, exp, powu } from "lib/prb-math/src/SD59x18.sol";
 
 //@notice Implementation of Discrete GDA with exponential price decay for ERC721
 abstract contract DiscreteGDA is ERC721 {
@@ -36,17 +36,13 @@ abstract contract DiscreteGDA is ERC721 {
   }
 
   function purchasePrice(uint256 numTokensToBuy) public view returns (uint256) {
-    SD59x18 numTokensToBuy = SD59x18.wrap(int256(numTokensToBuy));
     SD59x18 timeSinceStart = sub(
       SD59x18.wrap(int256(block.timestamp * 1e18)),
       auctionStartTime
     );
-    SD59x18 num1 = mul(
-      initialPrice,
-      pow(scaleFactor, SD59x18.wrap(int256(currentId * 1e18)))
-    );
+    SD59x18 num1 = mul(initialPrice, powu(scaleFactor, currentId));
 
-    SD59x18 num2 = sub(pow(scaleFactor, numTokensToBuy), SD59x18.wrap(1e18));
+    SD59x18 num2 = sub(powu(scaleFactor, numTokensToBuy), SD59x18.wrap(1e18));
 
     SD59x18 den1 = exp(mul(decayConstant, timeSinceStart));
 
@@ -65,7 +61,7 @@ abstract contract DiscreteGDA is ERC721 {
     }
 
     //mint numTokens
-    for (uint256 i = 0; i < numTokens / 1e18; i++) {
+    for (uint256 i = 0; i < numTokens; i++) {
       _mint(to, ++currentId);
     }
 

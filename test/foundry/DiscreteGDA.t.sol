@@ -48,7 +48,7 @@ contract DiscreteGDATest is Test {
 
   function testInitialPrice() public {
     uint256 initial = uint256(SD59x18.unwrap(initialPrice));
-    uint256 purchasePrice = gda.purchasePrice(1e18);
+    uint256 purchasePrice = gda.purchasePrice(1);
 
     // initially the purchace price should be same (within 1/10 of percent)
     // as the calculated purchase price
@@ -56,7 +56,7 @@ contract DiscreteGDATest is Test {
   }
 
   function testInsufficientPayment() public {
-    uint256 quantity = 1e18;
+    uint256 quantity = 1;
     uint256 purchasePrice = gda.purchasePrice(quantity);
     vm.deal(address(this), purchasePrice);
     vm.expectRevert(insufficientPayment);
@@ -66,7 +66,7 @@ contract DiscreteGDATest is Test {
 
   function testMintCorrectly() public {
     // assertTrue(gda.ownerOf(1) != address(this));
-    uint256 quantity = 1e18;
+    uint256 quantity = 1;
     uint256 purchasePrice = gda.purchasePrice(quantity);
     vm.deal(address(this), purchasePrice);
     // use purchase price to buy the tokens
@@ -75,7 +75,7 @@ contract DiscreteGDATest is Test {
   }
 
   function testRefund() public {
-    uint256 quantity = 1e18;
+    uint256 quantity = 1;
     uint256 purchasePrice = gda.purchasePrice(quantity);
     vm.deal(address(this), 2 * purchasePrice);
     // pay twice, should get back the amount
@@ -92,7 +92,7 @@ contract DiscreteGDATest is Test {
     vm.assume(timeSinceStart >= 1 && timeSinceStart < 266);
 
     // ensure `numTokensAlreadySold` tokens have been sold
-    purchaseTokens(numTokensAlreadySold * 1e18);
+    purchaseTokens(numTokensAlreadySold);
     assertEq(gda.currentId(), numTokensAlreadySold);
 
     // ensure time is rolled forward by `timeSinceStart` seconds
@@ -106,7 +106,7 @@ contract DiscreteGDATest is Test {
       timeSinceStart
     );
 
-    uint256 actualPrice = gda.purchasePrice(numTokensToBuy * 1e18);
+    uint256 actualPrice = gda.purchasePrice(numTokensToBuy);
 
     // max allowed error percentage: 0.000000000000010000%
     assertApproxEqRel(actualPrice, uint256(expectedPrice), 10000);
@@ -121,7 +121,7 @@ contract DiscreteGDATest is Test {
     vm.assume(numTokensAlreadySold >= 1 && numTokensAlreadySold <= 5);
 
     // ensure `numTokensAlreadySold` tokens have been sold
-    purchaseTokens(numTokensAlreadySold * 1e18);
+    purchaseTokens(numTokensAlreadySold);
     assertEq(gda.currentId(), numTokensAlreadySold);
 
     // ensure time is rolled forward by `timeSinceStart` seconds
@@ -135,7 +135,7 @@ contract DiscreteGDATest is Test {
       timeSinceStart
     );
 
-    uint256 actualPrice = gda.purchasePrice(numTokensToBuy * 1e18);
+    uint256 actualPrice = gda.purchasePrice(numTokensToBuy);
 
     assertApproxEqRel(actualPrice, uint256(expectedPrice), 1000);
   }
@@ -149,7 +149,7 @@ contract DiscreteGDATest is Test {
     vm.assume(numTokensToBuy >= 1 && numTokensToBuy <= 5);
 
     // ensure `numTokensAlreadySold` tokens have been sold
-    purchaseTokens(numTokensAlreadySold * 1e18);
+    purchaseTokens(numTokensAlreadySold);
     assertEq(gda.currentId(), numTokensAlreadySold);
 
     // ensure time is rolled forward by `timeSinceStart` seconds
@@ -163,7 +163,7 @@ contract DiscreteGDATest is Test {
       timeSinceStart
     );
 
-    uint256 actualPrice = gda.purchasePrice(numTokensToBuy * 1e18);
+    uint256 actualPrice = gda.purchasePrice(numTokensToBuy);
 
     assertApproxEqRel(actualPrice, uint256(expectedPrice), 2000);
   }
