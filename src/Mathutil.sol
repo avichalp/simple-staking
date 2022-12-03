@@ -14,7 +14,7 @@ contract Mathutil {
   }
 
   /// @notice gives the 512-bit product of two 256-bit numbers
-  /// 
+  ///
   /// @param a, b multiplicand and multiplier
   /// @return r0 and r1, the 512-bit product as two 256-bit numbers
   function mul512(uint256 a, uint256 b)
@@ -371,16 +371,39 @@ contract Mathutil {
     return muldiv(log2Wad(x), scale, log2E);
   }
 
-  function powuWad(uint256 x, uint256 y)
-    internal
-    pure
-    returns (uint256 result)
-  {
-    result = y % 2 == 1 ? x : 1e18;
-    for (y /= 2; y > 0; y /= 2) {
-      x = muldiv(x, x, 1e18);
-      if (y % 2 == 1) {
-        result = muldiv(result, x, 1e18);
+  /// @notice computes x to the power of y, where x is a signed WAD and y is basic unsigned integer
+  ///
+  /// @dev uses repeated squaring to calculate the power
+  ///
+  /// @param x, y where x is the base and y is the exponent
+  /// @return result, a signed integer which is x raise to the power of y
+  function powuWad(int256 x, uint256 y) internal pure returns (int256) {
+    // revert if x is equal to int256 min
+    require(x != type(int256).min, "powuWad:x cannot be min int256");    
+
+    uint256 xAbs = x >= 0 ? uint256(x) : uint256(-x);
+    uint256 resultAbs = y % 2 == 1 ? xAbs : 1e18;        
+    uint256 yy = y;
+
+    for (yy /= 2; yy > 0; yy /= 2) {
+      xAbs = muldiv(xAbs, xAbs, 1e18);      
+      if (yy % 2 == 1) {
+        resultAbs = muldiv(resultAbs, xAbs, 1e18);
+      }
+    }
+
+    // check if the result fits in a signed WAD (SD59x18)
+    require(
+      resultAbs <= uint256(type(int256).max),
+      "powuWad: result does not fit in a signed WAD (SD59x18)"
+    );
+
+    // if x is negative, then the result is negative if the exponent is odd
+    unchecked {
+      if (x > 0 || y % 2 == 0) {
+        return int256(resultAbs);
+      } else {
+        return -int256(resultAbs);
       }
     }
   }

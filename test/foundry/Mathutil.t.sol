@@ -287,68 +287,97 @@ contract MathutilTest is Test, Mathutil {
     assertEq(powuWad(0, 1), 0);
     assertEq(powuWad(1e18, 0), 1e18);
     assertEq(powuWad(1e18, 1), 1e18);
+    assertEq(powuWad(-1e18, 0), 1e18);
+    assertEq(powuWad(-1e18, 1), -1e18);
     assertEq(powuWad(1e15, 2), 1e12);
     assertEq(powuWad(10e18, 2), 100e18);
     assertApproxEqRel(
       powuWad(5419e15, 19),
       // cross calculated using wolfram alpha
       87996190095091_496997815923266387,
-      1000 // 1e18 is 100% error
+      1000
     );
     assertApproxEqRel(
       powuWad(478770000000000000000, 20),
       // cross calculated using wolfram alpha
       400441047687151121501368529571950234763284476825512183_793320000000000000,
-      1000 // 1e18 is 100% error
+      1000
     );
     assertApproxEqRel(
       powuWad(6452166000000000000000, 7),
       // cross calculated using wolfram alpha
       465520409372619407422434167_862736844121311696,
-      1000 // 1e18 is 100% error
+      1000
     );
 
-    uint256 maxU60x18SQRT = 340282366920938463463374607431_768211455999999999;
+    int256 maxSD59x18SQRT = 240615969168004511545033772477_625056927114980741;
     assertApproxEqRel(
-      powuWad(maxU60x18SQRT, 2),
-      115792089237316195423570985008687907853269984664959999305615_000000000000000000,
-      1 // 1e18 is 100% error
+      powuWad(maxSD59x18SQRT, 2),
+      int256(
+        57896044618658097711785492504343953926634992332820282019728_000000000000000000
+      ),
+      1
     );
 
-    uint256 maxU60x18CBRT = 48740834812604276470_692694885616578541;
+    int256 maxSD59x18SQRTNeg = -240615969168004511545033772477_625056927114980741;
+    assertApproxEqRel(
+      powuWad(maxSD59x18SQRTNeg, 2),
+      int256(
+        57896044618658097711785492504343953926634992332820282019728_000000000000000000
+      ),
+      1
+    );
+
+    int256 maxU60x18CBRT = 38685626227668133590_597631999999999999;
     assertApproxEqRel(
       powuWad(maxU60x18CBRT, 3),
       // cross calculated using wolfram alpha
-      115792089237316195423570985008687907850073444262747922508526_000000000000000000,
-      1 // 1e18 is 100% error
+      57896044618658097711785492504343953926634992332820282019728_000000000000000000,
+      1
     );
 
-    uint256 maxU60x18Whole = 115792089237316195423570985008687907853269984665640564039457;
+    int256 maxSD59x18Whole = 57896044618658097711785492504343953926634992332820282019728;
     assertEq(
-      powuWad(maxU60x18Whole, 1),
-      115792089237316195423570985008687907853269984665640564039457
+      powuWad(maxSD59x18Whole, 1),
+      57896044618658097711785492504343953926634992332820282019728
     );
+  }
+
+  function testPowuWadBaseUnderflow() public {
+    vm.expectRevert("powuWad:x cannot be min int256");
+    powuWad(type(int256).min, 1);
+  }
+
+  function testPowuWadResultOverflow() public {
+    vm.expectRevert("prod1 > denominator");
+    powuWad(type(int256).max, type(uint256).max);
   }
 
   function testPowuWadFFI() public {
     // Cross Ref tests
-    uint256 x = 2;
+    int256 x = 2;
     uint256 y = 3;
     int256 pyResult = abi.decode(
-      ffi("pow", string(abi.encodePacked(x.toString(), ",", y.toString()))),
+      ffi(
+        "pow",
+        string(abi.encodePacked(uint256(x).toString(), ",", y.toString()))
+      ),
       (int256)
     );
-    uint256 solResult = powuWad(x * 1e18, y);
-    assertApproxEqAbs(solResult, uint256(pyResult), 500);
+    int256 solResult = powuWad(x * 1e18, y);
+    assertApproxEqAbs(solResult, pyResult, 500);
 
     x = 10;
     y = 2;
     pyResult = abi.decode(
-      ffi("pow", string(abi.encodePacked(x.toString(), ",", y.toString()))),
+      ffi(
+        "pow",
+        string(abi.encodePacked(uint256(x).toString(), ",", y.toString()))
+      ),
       (int256)
     );
     solResult = powuWad(x * 1e18, y);
-    assertApproxEqAbs(solResult, uint256(pyResult), 500);
+    assertApproxEqAbs(solResult, pyResult, 500);
   }
 
   function testMostSignificantBit() public {
