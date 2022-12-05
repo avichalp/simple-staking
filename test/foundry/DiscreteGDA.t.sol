@@ -9,10 +9,10 @@ contract MockDiscreteGDA is DiscreteGDA {
   constructor(
     string memory _name,
     string memory _symbol,
-    SD59x18 _initialPrice,
-    SD59x18 _scalerFactor,
-    SD59x18 _decayConstant
-  ) DiscreteGDA(_name, _symbol, _initialPrice, _scalerFactor, _decayConstant) {}
+    int256 _initialPrice,
+    int256 _scaleFactor,
+    int256 _decayConstant
+  ) DiscreteGDA(_name, _symbol, _initialPrice, _scaleFactor, _decayConstant) {}
 
   function tokenURI(uint256)
     public
@@ -28,11 +28,11 @@ contract DiscreteGDATest is Test {
 
   DiscreteGDA public gda;
 
-  SD59x18 public initialPrice = SD59x18.wrap(1000e18);
+  int256 public initialPrice = 1000e18;
   // lambda = 1/2
-  SD59x18 public decayConstant = div(SD59x18.wrap(1), SD59x18.wrap(2));
+  int256 public decayConstant = 5e17;
   // alpha = 1.1
-  SD59x18 public scaleFactor = div(SD59x18.wrap(11), SD59x18.wrap(10));
+  int256 scaleFactor = 11e17;
 
   bytes insufficientPayment = abi.encodeWithSignature("InsufficientPayment()");
 
@@ -47,7 +47,7 @@ contract DiscreteGDATest is Test {
   }
 
   function testInitialPrice() public {
-    uint256 initial = uint256(SD59x18.unwrap(initialPrice));
+    uint256 initial = uint256(initialPrice);
     uint256 purchasePrice = gda.purchasePrice(1);
 
     // initially the purchace price should be same (within 1/10 of percent)

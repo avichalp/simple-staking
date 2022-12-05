@@ -2,22 +2,22 @@
 pragma solidity ^0.8.13;
 
 import { ERC721 } from "solmate/tokens/ERC721.sol";
-import { SD59x18, add, sub, mul, div, exp, powu } from "lib/prb-math/src/SD59x18.sol";
+import "../Mathutil.sol";
 
 //@notice Implementation of Discrete GDA with exponential price decay for ERC721
-abstract contract DiscreteGDA is ERC721 {
+abstract contract DiscreteGDA is ERC721, Mathutil {
   ///@notice id of current ERC721
   uint256 public currentId = 0;
 
   // stored as 59x18 fixed precision number
   // initialPrice (k)
-  SD59x18 internal immutable initialPrice;
+  int256 internal immutable initialPrice;
   // scaleFactor (α)
-  SD59x18 internal immutable scaleFactor;
+  int256 internal immutable scaleFactor;
   // decayConstant (λ)
-  SD59x18 internal immutable decayConstant;
+  int256 internal immutable decayConstant;
   // auctionStartTime (T)
-  SD59x18 internal immutable auctionStartTime;
+  int256 internal immutable auctionStartTime;
 
   error InsufficientPayment();
   error UnableToRefund();
@@ -25,32 +25,34 @@ abstract contract DiscreteGDA is ERC721 {
   constructor(
     string memory _name,
     string memory _symbol,
-    SD59x18 _initialPrice,
-    SD59x18 _scaleFactor,
-    SD59x18 _decayConstant
+    int256 _initialPrice,
+    int256 _scaleFactor,
+    int256 _decayConstant
   ) ERC721(_name, _symbol) {
     initialPrice = _initialPrice;
     scaleFactor = _scaleFactor;
     decayConstant = _decayConstant;
-    auctionStartTime = SD59x18.wrap(int256(block.timestamp * 1e18));
+    auctionStartTime = int256(block.timestamp * 1e18);
   }
 
   function purchasePrice(uint256 numTokensToBuy) public view returns (uint256) {
-    SD59x18 timeSinceStart = sub(
-      SD59x18.wrap(int256(block.timestamp * 1e18)),
-      auctionStartTime
+    int256 timeSinceStart = int256(block.timestamp * 1e18) - auctionStartTime;
+
+    int256 num1 = muldiv(initialPrice, powuWad(scaleFactor, currentId), 1e18);
+
+    int256 num2 = powuWad(scaleFactor, numTokensToBuy) - 1e18;
+
+    int256 den1 = expWad(muldiv(decayConstant, timeSinceStart, 1e18));
+
+    int256 den2 = scaleFactor - 1e18;
+
+    int256 totalCost = muldiv(
+      muldiv(num1, num2, 1e18),
+      1e18,
+      muldiv(den1, den2, 1e18)
     );
-    SD59x18 num1 = mul(initialPrice, powu(scaleFactor, currentId));
 
-    SD59x18 num2 = sub(powu(scaleFactor, numTokensToBuy), SD59x18.wrap(1e18));
-
-    SD59x18 den1 = exp(mul(decayConstant, timeSinceStart));
-
-    SD59x18 den2 = sub(scaleFactor, SD59x18.wrap(1e18));
-
-    SD59x18 totalCost = div(mul(num1, num2), mul(den1, den2));
-
-    return uint256(SD59x18.unwrap(totalCost));
+    return uint256(totalCost);
   }
 
   //@notice purchase a specific number of tokens from the GDA
