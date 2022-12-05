@@ -5,7 +5,7 @@ import { ERC721 } from "solmate/tokens/ERC721.sol";
 import "../Mathutil.sol";
 
 //@notice Implementation of Discrete GDA with exponential price decay for ERC721
-abstract contract DiscreteGDA is ERC721, Mathutil {
+abstract contract DiscreteGDA is ERC721 {
   ///@notice id of current ERC721
   uint256 public currentId = 0;
 

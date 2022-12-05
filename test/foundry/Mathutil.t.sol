@@ -7,7 +7,7 @@ import "forge-std/console.sol";
 import "../../src/Mathutil.sol";
 import "solmate/utils/LibString.sol";
 
-contract MathutilTest is Test, Mathutil {
+contract MathutilTest is Test {
   using LibString for uint256;
 
   function testMul512() public {
