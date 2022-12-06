@@ -8,9 +8,9 @@ contract MyContGDA is ContGDA {
   constructor(
     string memory _name,
     string memory _symbol,
-    SD59x18 _initialPrice,
-    SD59x18 _scalerFactor,
-    SD59x18 _decayConstant
+    int256 _initialPrice,
+    int256 _scalerFactor,
+    int256 _decayConstant
   ) ContGDA(_name, _symbol, _initialPrice, _scalerFactor, _decayConstant) {}
 }
 
@@ -18,11 +18,11 @@ contract CGDAScript is Script {
   ContGDA public gda;
 
   // k = 10
-  SD59x18 public initialPrice = SD59x18.wrap(10);
+  int256 public initialPrice = 10e18;
   // lambda = 1/2
-  SD59x18 public decayConstant = div(SD59x18.wrap(1), SD59x18.wrap(2));
+  int256 public decayConstant = 5e17;
   // r = 1
-  SD59x18 public emissionRate = SD59x18.wrap(1);
+  int256 public emissionRate = 1e18;
 
   function setUp() public {}
 
