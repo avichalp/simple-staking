@@ -94,7 +94,7 @@ contract ContGDATest is Test {
     assertEq(gda.purchasePrice(10e18), 19.865241060018290658e18);
   }
 
-  function testPurchasePriceFixedTime(uint256 numTokensToBuy) public {
+  function testPurchasePriceFixedTimeFFI(uint256 numTokensToBuy) public {
     uint256 timeSinceStart = 10;
     vm.warp(block.timestamp + timeSinceStart);
     vm.assume(numTokensToBuy >= 1 && numTokensToBuy <= 120);
@@ -107,7 +107,7 @@ contract ContGDATest is Test {
     assertApproxEqRel(purchasePrice, uint256(pyPurchasePrice), 1000);
   }
 
-  function testPurchasePriceFixedAmount(uint256 timeSinceStart) public {
+  function testPurchasePriceFixedAmountFFI(uint256 timeSinceStart) public {
     vm.assume(timeSinceStart >= 1 && timeSinceStart <= 250);
     vm.warp(block.timestamp + timeSinceStart);
 
