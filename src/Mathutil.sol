@@ -376,12 +376,12 @@ function powuWad(int256 x, uint256 y) pure returns (int256) {
   require(x != type(int256).min, "powuWad:x cannot be min int256");
 
   uint256 xAbs = x >= 0 ? uint256(x) : uint256(-x);
-  uint256 resultAbs = y % 2 == 1 ? xAbs : 1e18;
+  uint256 resultAbs = y & 1 > 0 ? xAbs : 1e18;
   uint256 yy = y;
 
-  for (yy /= 2; yy > 0; yy /= 2) {
+  for (yy >>= 1; yy > 0; yy >>= 1) {
     xAbs = muldiv(xAbs, xAbs, 1e18);
-    if (yy % 2 == 1) {
+    if (yy & 1 > 0) {
       resultAbs = muldiv(resultAbs, xAbs, 1e18);
     }
   }
